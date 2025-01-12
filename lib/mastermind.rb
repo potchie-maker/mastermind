@@ -40,15 +40,18 @@ module MasterMind
       puts "Enter 1 for Codebreaker, or 2 for Encoder"
       role = nil
 
-      until %w[1 2].include?(role)
+      until %w[1 2 3].include?(role)
         role = gets.chomp
-        puts "Invalid input. Please enter 1 for Codebreaker or 2 for Encoder." unless %w[1 2].include?(role)
+        puts "\nInvalid input. Please enter 1 for Codebreaker or 2 for Encoder." unless %w[1 2].include?(role)
       end
 
-      if role == '1'
-        return MasterMind::Game.new(HumanPlayer.new, ComputerPlayer.new)
-      elsif role == '2'
-        return MasterMind::Game.new(ComputerPlayer.new, HumanPlayer.new)
+      case role
+      when '1'
+        MasterMind::Game.new(HumanPlayer.new, ComputerPlayer.new)
+      when '2'
+        MasterMind::Game.new(ComputerPlayer.new, HumanPlayer.new)
+      when '3' # Secret dev mode for testing
+        MasterMind::Game.new(HumanPlayer.new, HumanPlayer.new)
       end
     end
 
@@ -58,27 +61,25 @@ module MasterMind
 
     def give_feedback(secret, guess)
       secret_copy = secret.dup
-      feedback = []
+      feedback = Array.new(Game::AMOUNT, nil)
 
       guess.each_with_index do |col, i|
         if secret[i] == col
-          feedback << 'match'
+          feedback[i] = 'match'
           secret_copy[i] = nil
-        end
-      end
-
-      guess.each_with_index do |col, i|
-        next if secret[i] == col
-        if secret_copy.include?(col)
-          feedback << 'exists'
+        elsif secret_copy.include?(col)
+          feedback[secret_copy.index(col)] = 'exists'
           secret_copy[secret_copy.index(col)] = nil
         end
       end
 
-      if feedback.empty?
+      if feedback.compact.empty?
         puts "\nFeedback: None of the guesses are in the secret code"
       else
-        puts "\nFeedback: #{feedback.join(' | ')}"
+        feedback.compact.map! do |fb| 
+          fb == 'match' ? fb.colorize(:black).on_green : fb.colorize(:black).on_yellow
+        end
+        puts "\nFeedback: #{feedback.compact.join(' | ')}"
       end
     end
   end
