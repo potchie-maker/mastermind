@@ -74,7 +74,12 @@ module MasterMind
           secret_copy[secret_copy.index(col)] = nil
         end
       end
-      puts "\nFeedback: #{feedback.shuffle.join(' | ')}"
+
+      if feedback.empty?
+        puts "\nFeedback: None of the guesses are in the secret code"
+      else
+        puts "\nFeedback: #{feedback.join(' | ')}"
+      end
     end
   end
 
